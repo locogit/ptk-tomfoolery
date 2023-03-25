@@ -513,15 +513,15 @@ public:
             }
 
             medalSubImage += updateInfo.DeltaTime * 25.0f;
-            if (medalSubImage >= 29) {
-                medalSubImage = 0.0f;
+            if (medalSubImage >= 30) {
+                medalSubImage = 0;
             }
 
-            m_medal_info->GetNode("sun")->SetPatternIndex(medalSubImage);
-            m_medal_info->GetNode("sun_shade")->SetPatternIndex(medalSubImage);
+            m_medal_info->GetNode("sun")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+            m_medal_info->GetNode("sun_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
 
-            m_medal_info->GetNode("moon")->SetPatternIndex(medalSubImage);
-            m_medal_info->GetNode("moon_shade")->SetPatternIndex(medalSubImage);
+            m_medal_info->GetNode("moon")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+            m_medal_info->GetNode("moon_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
 
             if (switchCooldown <= 0) {
                 if (padState->IsTapped(Sonic::eKeyState_LeftBumper) || padState->IsTapped(Sonic::eKeyState_RightBumper)) {
