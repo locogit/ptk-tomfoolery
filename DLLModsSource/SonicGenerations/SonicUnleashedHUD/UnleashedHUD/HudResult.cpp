@@ -577,7 +577,7 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 
 				WRITE_JUMP(0x10B96E6, (void*)0x10B974B);
 				WRITE_NOP(0x10B9976, 5);
-				Common::PlaySoundStatic(soundHandle, 1000005);
+				Common::PlaySoundStatic(soundHandle, 1000027);
 
 				HudLoading::StartFadeOut();
 			}
