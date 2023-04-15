@@ -128,10 +128,10 @@ public:
         if(m_status_footer) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_status_footer);
         if(m_decide_bg) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_decide_bg);
 
-        m_spStatus->SendMessage(m_spStatus->m_ActorID, boost::make_shared<Sonic::Message::MsgKill>());
-        m_spStatus = nullptr;
+        if(m_spStatus) m_spStatus->SendMessage(m_spStatus->m_ActorID, boost::make_shared<Sonic::Message::MsgKill>());
+        if(m_spStatus) m_spStatus = nullptr;
 
-        m_rcStatus = nullptr;
+        if(m_rcStatus) m_rcStatus = nullptr;
     }
 
     void RemoveStats() {
@@ -247,13 +247,14 @@ public:
             return; 
         }
 
+        currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
         Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
 
         curStat.m_tag_bg_2 = m_rcStatus->CreateScene("tag_bg_2");
-        curStat.m_tag_bg_2->SetHideFlag(false);
-        curStat.m_tag_bg_2->SetPosition(0.0f, y);
-        CSDCommon::PlayAnimation(*curStat.m_tag_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        m_tag_bg_2.push_back(curStat.m_tag_bg_2);
+        if (curStat.m_tag_bg_2) curStat.m_tag_bg_2->SetHideFlag(false);
+        if (curStat.m_tag_bg_2) curStat.m_tag_bg_2->SetPosition(0.0f, y);
+        if (curStat.m_tag_bg_2) CSDCommon::PlayAnimation(*curStat.m_tag_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (curStat.m_tag_bg_2) m_tag_bg_2.push_back(curStat.m_tag_bg_2);
 
         const char* txtScene;
 
@@ -280,45 +281,46 @@ public:
         }
 
         curStat.m_tag_txt_2 = m_rcStatus->CreateScene(txtScene);
-        curStat.m_tag_txt_2->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*curStat.m_tag_txt_2, (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        m_tag_txt_2.push_back(curStat.m_tag_txt_2);
+        if (curStat.m_tag_txt_2) curStat.m_tag_txt_2->SetHideFlag(false);
+        if (curStat.m_tag_txt_2) CSDCommon::PlayAnimation(*curStat.m_tag_txt_2, (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (curStat.m_tag_txt_2) m_tag_txt_2.push_back(curStat.m_tag_txt_2);
 
         curStat.m_prgs_bg_2 = m_rcStatus->CreateScene("prgs_bg_2");
-        curStat.m_prgs_bg_2->SetHideFlag(false);
-        curStat.m_prgs_bg_2->SetPosition(0.0f, y);
-        CSDCommon::PlayAnimation(*curStat.m_prgs_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        m_prgs_bg_2.push_back(curStat.m_prgs_bg_2);
+        if (curStat.m_prgs_bg_2) curStat.m_prgs_bg_2->SetHideFlag(false);
+        if (curStat.m_prgs_bg_2) curStat.m_prgs_bg_2->SetPosition(0.0f, y);
+        if (curStat.m_prgs_bg_2) CSDCommon::PlayAnimation(*curStat.m_prgs_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (curStat.m_prgs_bg_2) m_prgs_bg_2.push_back(curStat.m_prgs_bg_2);
 
         curStat.m_prgs_num_2 = m_rcStatus->CreateScene("prgs_num_2");
-        curStat.m_prgs_num_2->SetHideFlag(false);
-        curStat.m_prgs_num_2->SetPosition(0.0f, y);
+        if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->SetHideFlag(false);
+        if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->SetPosition(0.0f, y);
 
         if (curStat.level >= curStat.maxLevel) {
-            curStat.m_prgs_num_2->GetNode("num")->SetHideFlag(1);
-            curStat.m_prgs_num_2->GetNode("img")->SetHideFlag(1);
-            curStat.m_prgs_num_2->GetNode("txt")->SetHideFlag(0);
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num")->SetHideFlag(1);
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("img")->SetHideFlag(1);
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("txt")->SetHideFlag(0);
         }
         else {
-            curStat.m_prgs_num_2->GetNode("num")->SetText(std::to_string(curStat.level).c_str());
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num")->SetText(std::to_string(curStat.level).c_str());
         }
 
         if (curStat.count == 0) {
-            curStat.m_prgs_num_2->GetNode("num_2")->SetHideFlag(1);
-            curStat.m_prgs_num_2->GetNode("img_2")->SetHideFlag(1);
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num_2")->SetHideFlag(1);
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("img_2")->SetHideFlag(1);
         }
         else {
-            curStat.m_prgs_num_2->GetNode("num_2")->SetText(std::to_string(curStat.count).c_str());
+            if (curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num_2")->SetText(std::to_string(curStat.count).c_str());
         }
 
-        CSDCommon::PlayAnimation(*curStat.m_prgs_num_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        m_prgs_num_2.push_back(curStat.m_prgs_num_2);
+        if (curStat.m_prgs_num_2) CSDCommon::PlayAnimation(*curStat.m_prgs_num_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (curStat.m_prgs_num_2) m_prgs_num_2.push_back(curStat.m_prgs_num_2);
+
 
         curStat.m_prgs_bar_2 = m_rcStatus->CreateScene("prgs_bar_2");
-        curStat.m_prgs_bar_2->SetHideFlag(false);
-        curStat.m_prgs_bar_2->SetPosition(0.0f, y);
-        CSDCommon::PlayAnimation(*curStat.m_prgs_bar_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        m_prgs_bar_2.push_back(curStat.m_prgs_bar_2);
+        if (curStat.m_prgs_bar_2) curStat.m_prgs_bar_2->SetHideFlag(false);
+        if (curStat.m_prgs_bar_2) curStat.m_prgs_bar_2->SetPosition(0.0f, y);
+        if (curStat.m_prgs_bar_2) CSDCommon::PlayAnimation(*curStat.m_prgs_bar_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (curStat.m_prgs_bar_2) m_prgs_bar_2.push_back(curStat.m_prgs_bar_2);
 
         y += (isWerehog ? 64.0f : 73.0f);
 
@@ -331,13 +333,14 @@ public:
         for (int i = 0; i < (isWerehog ? 5 : 2); i++)
         {
             currentStatIndex = i;
+            currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
             Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
 
             curStat.m_tag_bg_2 = m_rcStatus->CreateScene("tag_bg_2");
-            curStat.m_tag_bg_2->SetHideFlag(false);
-            curStat.m_tag_bg_2->SetPosition(0.0f, y);
-            CSDCommon::PlayAnimation(*curStat.m_tag_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-            m_tag_bg_2.push_back(curStat.m_tag_bg_2);
+            if(curStat.m_tag_bg_2) curStat.m_tag_bg_2->SetHideFlag(false);
+            if(curStat.m_tag_bg_2) curStat.m_tag_bg_2->SetPosition(0.0f, y);
+            if(curStat.m_tag_bg_2) CSDCommon::PlayAnimation(*curStat.m_tag_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+            if(curStat.m_tag_bg_2) m_tag_bg_2.push_back(curStat.m_tag_bg_2);
 
             const char* txtScene;
 
@@ -364,45 +367,46 @@ public:
             }
 
             curStat.m_tag_txt_2 = m_rcStatus->CreateScene(txtScene);
-            curStat.m_tag_txt_2->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*curStat.m_tag_txt_2, (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-            m_tag_txt_2.push_back(curStat.m_tag_txt_2);
+            if(curStat.m_tag_txt_2) curStat.m_tag_txt_2->SetHideFlag(false);
+            if(curStat.m_tag_txt_2) CSDCommon::PlayAnimation(*curStat.m_tag_txt_2, (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+            if(curStat.m_tag_txt_2) m_tag_txt_2.push_back(curStat.m_tag_txt_2);
 
             curStat.m_prgs_bg_2 = m_rcStatus->CreateScene("prgs_bg_2");
-            curStat.m_prgs_bg_2->SetHideFlag(false);
-            curStat.m_prgs_bg_2->SetPosition(0.0f, y);
-            CSDCommon::PlayAnimation(*curStat.m_prgs_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-            m_prgs_bg_2.push_back(curStat.m_prgs_bg_2);
+            if(curStat.m_prgs_bg_2) curStat.m_prgs_bg_2->SetHideFlag(false);
+            if(curStat.m_prgs_bg_2) curStat.m_prgs_bg_2->SetPosition(0.0f, y);
+            if(curStat.m_prgs_bg_2) CSDCommon::PlayAnimation(*curStat.m_prgs_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+            if(curStat.m_prgs_bg_2) m_prgs_bg_2.push_back(curStat.m_prgs_bg_2);
 
             curStat.m_prgs_num_2 = m_rcStatus->CreateScene("prgs_num_2");
-            curStat.m_prgs_num_2->SetHideFlag(false);
-            curStat.m_prgs_num_2->SetPosition(0.0f, y);
+            if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->SetHideFlag(false);
+            if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->SetPosition(0.0f, y);
 
             if (curStat.level >= curStat.maxLevel) {
-                curStat.m_prgs_num_2->GetNode("num")->SetHideFlag(1);
-                curStat.m_prgs_num_2->GetNode("img")->SetHideFlag(1);
-                curStat.m_prgs_num_2->GetNode("txt")->SetHideFlag(0);
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num")->SetHideFlag(1);
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("img")->SetHideFlag(1);
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("txt")->SetHideFlag(0);
             }
             else {
-                curStat.m_prgs_num_2->GetNode("num")->SetText(std::to_string(curStat.level).c_str());
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num")->SetText(std::to_string(curStat.level).c_str());
             }
 
             if (curStat.count == 0) {
-                curStat.m_prgs_num_2->GetNode("num_2")->SetHideFlag(1);
-                curStat.m_prgs_num_2->GetNode("img_2")->SetHideFlag(1);
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num_2")->SetHideFlag(1);
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("img_2")->SetHideFlag(1);
             }
             else {
-                curStat.m_prgs_num_2->GetNode("num_2")->SetText(std::to_string(curStat.count).c_str());
+                if(curStat.m_prgs_num_2) curStat.m_prgs_num_2->GetNode("num_2")->SetText(std::to_string(curStat.count).c_str());
             }
 
-            CSDCommon::PlayAnimation(*curStat.m_prgs_num_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-            m_prgs_num_2.push_back(curStat.m_prgs_num_2);
+            if(curStat.m_prgs_num_2) CSDCommon::PlayAnimation(*curStat.m_prgs_num_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+            if(curStat.m_prgs_num_2) m_prgs_num_2.push_back(curStat.m_prgs_num_2);
+
 
             curStat.m_prgs_bar_2 = m_rcStatus->CreateScene("prgs_bar_2");
-            curStat.m_prgs_bar_2->SetHideFlag(false);
-            curStat.m_prgs_bar_2->SetPosition(0.0f, y);
-            CSDCommon::PlayAnimation(*curStat.m_prgs_bar_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-            m_prgs_bar_2.push_back(curStat.m_prgs_bar_2);
+            if(curStat.m_prgs_bar_2) curStat.m_prgs_bar_2->SetHideFlag(false);
+            if(curStat.m_prgs_bar_2) curStat.m_prgs_bar_2->SetPosition(0.0f, y);
+            if(curStat.m_prgs_bar_2) CSDCommon::PlayAnimation(*curStat.m_prgs_bar_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+            if(curStat.m_prgs_bar_2) m_prgs_bar_2.push_back(curStat.m_prgs_bar_2);
 
             y += (isWerehog ? 64.0f : 73.0f);
         }
@@ -410,9 +414,6 @@ public:
     }
 
     void Outro() {
-        exit = true;
-        //return; // rest crashes 
-
         // Quit Button
         if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
@@ -432,6 +433,7 @@ public:
 
         if(m_medal_m_gauge) CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
+        currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
         Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
 
         for (size_t i = 0; i < m_tag_bg_2.size(); i++)
@@ -453,6 +455,8 @@ public:
         if(m_prgs_bar_1) CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
         if(m_prgs_num_1) CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+
+        exit = true;
     }
 
     void AddCallback
@@ -622,6 +626,7 @@ public:
                 if (statDelay <= 0) {
                     currentStatIndex++;
                     AddStat();
+                    currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
                 }
             }
 
@@ -688,12 +693,12 @@ public:
                 }
             }
 
-            if (!footerVisible && m_status_footer) {
+            if (!footerVisible) {
                 if (timeFooter >= 1.06f) {
-                    m_status_footer->SetHideFlag(false);
+                    if(m_status_footer) m_status_footer->SetHideFlag(false);
                     footerVisible = true;
                 }
-                else { m_status_footer->SetHideFlag(true); timeFooter += updateInfo.DeltaTime; }
+                else { if(m_status_footer) m_status_footer->SetHideFlag(true); timeFooter += updateInfo.DeltaTime; }
             }
         }
     }

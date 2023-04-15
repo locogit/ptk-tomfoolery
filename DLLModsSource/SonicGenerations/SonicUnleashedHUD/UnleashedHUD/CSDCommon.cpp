@@ -30,14 +30,14 @@ void CSDCommon::CheckSceneAnimation(int i, Chao::CSD::CScene* scene)
 	else
 	{
 		if (sceneB) {
-			Common::ClampFloat(CSDCommon::scenesPlayingBack[i]->m_MotionFrame, 0, CSDCommon::scenesPlayingBack[i]->m_MotionEndFrame);
+			if(CSDCommon::scenesPlayingBack[i] && CSDCommon::scenesPlayingBack[i]->m_MotionFrame) Common::ClampFloat(CSDCommon::scenesPlayingBack[i]->m_MotionFrame, 0, CSDCommon::scenesPlayingBack[i]->m_MotionEndFrame);
 		}
 
 		if (IsAnimDone(CSDCommon::scenesPlayingBack[i]))
 		{
-			CSDCommon::FreezeMotion(CSDCommon::scenesPlayingBack[i], 0);
+			if(CSDCommon::scenesPlayingBack[i]) CSDCommon::FreezeMotion(CSDCommon::scenesPlayingBack[i], 0);
 			auto it = std::find(CSDCommon::scenesPlayingBack.begin(), CSDCommon::scenesPlayingBack.end(), scene);
-			if (it != CSDCommon::scenesPlayingBack.end())CSDCommon::scenesPlayingBack.erase(it);
+			if(CSDCommon::scenesPlayingBack[i]) if (it != CSDCommon::scenesPlayingBack.end())CSDCommon::scenesPlayingBack.erase(it);
 			return;
 		}
 	}
