@@ -112,21 +112,21 @@ public:
 
         RemoveStats();
 
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_status_title);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_logo);
+        if(m_status_title) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_status_title);
+        if(m_logo) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_logo);
 
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_info);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_s_gauge);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_m_gauge);
+        if(m_medal_info) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_info);
+        if(m_medal_s_gauge) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_s_gauge);
+        if(m_medal_m_gauge) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_medal_m_gauge);
 
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_1);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_1);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_1);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_1);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_1);
+        if(m_tag_bg_1) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_1);
+        if(m_tag_txt_1) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_1);
+        if(m_prgs_bg_1) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_1);
+        if(m_prgs_bar_1) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_1);
+        if(m_prgs_num_1) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_1);
 
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_status_footer);
-        Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_decide_bg);
+        if(m_status_footer) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_status_footer);
+        if(m_decide_bg) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_decide_bg);
 
         m_spStatus->SendMessage(m_spStatus->m_ActorID, boost::make_shared<Sonic::Message::MsgKill>());
         m_spStatus = nullptr;
@@ -137,11 +137,11 @@ public:
     void RemoveStats() {
         for (size_t i = 0; i < m_tag_bg_2.size(); i++)
         {
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_2[i]);
+            if(m_tag_bg_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_2[i]);
+            if(m_tag_txt_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_2[i]);
+            if(m_prgs_bg_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_2[i]);
+            if(m_prgs_num_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_2[i]);
+            if(m_prgs_bar_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_2[i]);
         }
 
         m_tag_bg_2.clear();
@@ -155,32 +155,46 @@ public:
         isWerehog = !isWerehog;
 
         //Exp Bar
-        m_tag_bg_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_tag_bg_1) {
+            m_tag_bg_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_tag_txt_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_tag_txt_1) {
+            m_tag_txt_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_bg_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_bg_1) {
+            m_prgs_bg_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_bar_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_bar_1) {
+            m_prgs_bar_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_num_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_num_1) {
+            m_prgs_num_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        // Quit Button
-        m_decide_bg->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, 100.0, 100.0);
+        if (m_decide_bg) {
+            m_decide_bg->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, 100.0, 100.0);
+        }
 
-        // Header
-        m_status_title->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, m_status_title->m_MotionEndFrame);
+        if (m_status_title) {
+            m_status_title->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, m_status_title->m_MotionEndFrame);
+        }
 
-        // Character Portrait
-        m_logo->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_logo, "Switch_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0, 20.0, false, !isWerehog);
+        if (m_logo) {
+            m_logo->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_logo, "Switch_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0, 20.0, false, !isWerehog);
+        }
+
         currentStatIndex = 0;
         statusIndex = 0;
         y = 0.0f;
@@ -192,39 +206,39 @@ public:
     void Select(int index, bool up, bool reverse, bool quit = false) {
 
         if (quit) {
-            CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-            CSDCommon::PlayAnimation(*m_tag_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_num_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_bar_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_tag_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_tag_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_num_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_num_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_bar_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
         }
         else {
             if (reverse) {
                 if (up && index == (isWerehog ? 4 : 1)) {
-                    CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
 
                 if (up) {
-                    CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_tag_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_num_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_bar_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index + 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
                 else {
-                    CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_tag_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_num_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if(m_prgs_bar_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index - 1, 0, (isWerehog ? 4 : 1))], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
             }
 
-            CSDCommon::PlayAnimation(*m_tag_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_tag_bg_2[index]) CSDCommon::PlayAnimation(*m_tag_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            CSDCommon::PlayAnimation(*m_prgs_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_bg_2[index]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            CSDCommon::PlayAnimation(*m_prgs_num_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_num_2[index]) CSDCommon::PlayAnimation(*m_prgs_num_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            CSDCommon::PlayAnimation(*m_prgs_bar_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_bar_2[index]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
         }
     }
 
@@ -397,48 +411,48 @@ public:
 
     void Outro() {
         exit = true;
-        return; // rest crashes 
+        //return; // rest crashes 
 
         // Quit Button
-        CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
         // Header
-        CSDCommon::PlayAnimation(*m_status_title, outro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+        if(m_status_title) CSDCommon::PlayAnimation(*m_status_title, outro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
         // Character Portrait
-        CSDCommon::PlayAnimation(*m_logo, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_logo) CSDCommon::PlayAnimation(*m_logo, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
         // Bottom Buttons
-        m_status_footer->SetHideFlag(true);
+        if(m_status_footer) m_status_footer->SetHideFlag(true);
 
         //Medals (Top Right)
-        CSDCommon::PlayAnimation(*m_medal_info, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_medal_info) CSDCommon::PlayAnimation(*m_medal_info, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_medal_s_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_medal_s_gauge) CSDCommon::PlayAnimation(*m_medal_s_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_medal_m_gauge) CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
         Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
 
         for (size_t i = 0; i < m_tag_bg_2.size(); i++)
         {
-            CSDCommon::PlayAnimation(*m_tag_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_tag_txt_2[i], (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_num_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            CSDCommon::PlayAnimation(*m_prgs_bar_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_tag_bg_2[i]) CSDCommon::PlayAnimation(*m_tag_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            if(m_tag_txt_2[i]) CSDCommon::PlayAnimation(*m_tag_txt_2[i], (curStat.txt_num < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            if(m_prgs_bg_2[i])CSDCommon::PlayAnimation(*m_prgs_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            if(m_prgs_num_2[i]) CSDCommon::PlayAnimation(*m_prgs_num_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            if(m_prgs_bar_2[i]) CSDCommon::PlayAnimation(*m_prgs_bar_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
         }
 
         // Exp Bar
-        CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_tag_bg_1) CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_tag_txt_1) CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_prgs_bg_1) CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_prgs_bar_1) CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        if(m_prgs_num_1) CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
     }
 
     void AddCallback
@@ -494,50 +508,74 @@ public:
 
         m_medal_m_gauge = m_rcStatus->CreateScene("medal_m_gauge");
 
-        Start();
-
         m_spStatus = boost::make_shared<Sonic::CGameObjectCSD>(m_rcStatus, 0.5f, "HUD_B2", false);
         Sonic::CGameDocument::GetInstance()->AddGameObject(m_spStatus, "main", this);
+
+        Start();
     }
 
     void Start() {
 
-        m_tag_bg_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_tag_bg_1) {
+            m_tag_bg_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_tag_txt_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_tag_txt_1) {
+            m_tag_txt_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_bg_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_bg_1) {
+            m_prgs_bg_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_bar_1->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_bar_1) {
+            m_prgs_bar_1->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_prgs_num_1->SetHideFlag(false);
-        m_prgs_num_1->GetNode("num")->SetText("69");
-        CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_prgs_num_1) {
+            m_prgs_num_1->SetHideFlag(false);
+            m_prgs_num_1->GetNode("num")->SetText("69");
+            CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_decide_bg->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_decide_bg) {
+            m_decide_bg->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_status_footer->SetHideFlag(true);
-        CSDCommon::PlayAnimation(*m_status_footer, "Usual_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_status_footer) {
+            m_status_footer->SetHideFlag(true);
+            CSDCommon::PlayAnimation(*m_status_footer, "Usual_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_status_title->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_status_title) {
+            m_status_title->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_logo->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_logo, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_logo) {
+            m_logo->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_logo, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_medal_info->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_medal_info, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_medal_info) {
+            m_medal_info->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_medal_info, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_medal_s_gauge->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_medal_s_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_medal_s_gauge) {
+            m_medal_s_gauge->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_medal_s_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
-        m_medal_m_gauge->SetHideFlag(false);
-        CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        if (m_medal_m_gauge) {
+            m_medal_m_gauge->SetHideFlag(false);
+            CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        }
 
         medalSubImage = 0.0f;
 
@@ -600,21 +638,25 @@ public:
                 medalSubImage = 0;
             }
 
-            m_medal_info->GetNode("sun")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-            m_medal_info->GetNode("sun_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+            if (m_medal_info) {
+                m_medal_info->GetNode("sun")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+                m_medal_info->GetNode("sun_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
 
-            m_medal_info->GetNode("moon")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-            m_medal_info->GetNode("moon_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-
-            if (switchCooldown <= 0) {
-                if (padState->IsTapped(Sonic::eKeyState_LeftBumper) || padState->IsTapped(Sonic::eKeyState_RightBumper)) {
-                    ToggleStats();
-                    switchCooldown = 0.5f;
-                    Common::PlaySoundStatic(switchHandle, 1000028);
-                }
+                m_medal_info->GetNode("moon")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+                m_medal_info->GetNode("moon_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
             }
-            else {
-                switchCooldown -= updateInfo.DeltaTime;
+
+            if (selectDelay == -1 && statDelayStart == -1) {
+                if (switchCooldown <= 0) {
+                    if (padState->IsTapped(Sonic::eKeyState_LeftBumper) || padState->IsTapped(Sonic::eKeyState_RightBumper)) {
+                        ToggleStats();
+                        switchCooldown = 0.5f;
+                        Common::PlaySoundStatic(switchHandle, 1000028);
+                    }
+                }
+                else {
+                    switchCooldown -= updateInfo.DeltaTime;
+                }
             }
 
             if (selectDelay == -1 && statDelayStart == -1) {
@@ -646,7 +688,7 @@ public:
                 }
             }
 
-            if (!footerVisible) {
+            if (!footerVisible && m_status_footer) {
                 if (timeFooter >= 1.06f) {
                     m_status_footer->SetHideFlag(false);
                     footerVisible = true;

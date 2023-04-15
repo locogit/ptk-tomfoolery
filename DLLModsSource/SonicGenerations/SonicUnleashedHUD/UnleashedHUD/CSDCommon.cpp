@@ -29,7 +29,9 @@ void CSDCommon::CheckSceneAnimation(int i, Chao::CSD::CScene* scene)
 	}
 	else
 	{
-		Common::ClampFloat(CSDCommon::scenesPlayingBack[i]->m_MotionFrame, 0, CSDCommon::scenesPlayingBack[i]->m_MotionEndFrame);
+		if (sceneB) {
+			Common::ClampFloat(CSDCommon::scenesPlayingBack[i]->m_MotionFrame, 0, CSDCommon::scenesPlayingBack[i]->m_MotionEndFrame);
+		}
 
 		if (IsAnimDone(CSDCommon::scenesPlayingBack[i]))
 		{
