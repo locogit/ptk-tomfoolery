@@ -8,5 +8,6 @@ public:
 	static void End();
 	static void Kill();
 	static bool CanEnd();
+	static bool EndDelayFinish();
 };
 

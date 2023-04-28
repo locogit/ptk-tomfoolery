@@ -14,6 +14,7 @@ public:
 		Medal,
 		Status,
 		FadeOut,
+		End
 	};
 
 	enum ResultNumType : int

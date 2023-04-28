@@ -199,7 +199,6 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 		{
 			// We are finished
 			HudResult_CHudResultRemoveCallback(This, nullptr, nullptr);
-			HudStatus::Kill();
 			WRITE_MEMORY(0x10B96E6, uint8_t, 0xE8, 0x85, 0xD2, 0xFF, 0xFF);
 			WRITE_MEMORY(0x10B9A7C, uint8_t, 0xE8, 0xCF, 0x7A, 0x5A, 0xFF);
 			WRITE_MEMORY(0x10B9976, uint8_t, 0xE8, 0xD5, 0x7B, 0x5A, 0xFF);
@@ -575,8 +574,6 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 				statusTimer = 0.0f;
 				HudStatus::End();
 
-				WRITE_JUMP(0x10B96E6, (void*)0x10B974B);
-				WRITE_NOP(0x10B9976, 5);
 				Common::PlaySoundStatic(soundHandle, 1000027);
 
 				HudLoading::StartFadeOut();
@@ -584,7 +581,17 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 		}
 		break;
 	}
-	case HudResult::ResultState::FadeOut: break;
+	case HudResult::ResultState::FadeOut:
+		if (HudStatus::EndDelayFinish()) {
+			WRITE_JUMP(0x10B96E6, (void*)0x10B974B);
+			WRITE_NOP(0x10B9976, 5);
+			HudStatus::Kill();
+			m_resultStateNew = HudResult::ResultState::End;
+		}
+		break;
+	
+	case HudResult::ResultState::End:
+		break;
 	}
 }
 
