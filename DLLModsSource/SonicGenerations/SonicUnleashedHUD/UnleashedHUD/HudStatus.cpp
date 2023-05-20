@@ -10,14 +10,9 @@ class Stat {
     const char* name;
     int txt_num;
     int level;
-    int maxLevel;
+    int  maxLevel;
     int count;
 
-    Chao::CSD::RCPtr<Chao::CSD::CScene> m_tag_bg_2;
-    Chao::CSD::RCPtr<Chao::CSD::CScene> m_tag_txt_2;
-    Chao::CSD::RCPtr<Chao::CSD::CScene> m_prgs_bg_2;
-    Chao::CSD::RCPtr<Chao::CSD::CScene> m_prgs_bar_2;
-    Chao::CSD::RCPtr<Chao::CSD::CScene> m_prgs_num_2;
 public:
     const char* &GetName() {
         return name;
@@ -39,28 +34,6 @@ public:
         return count;
     }
 
-    Chao::CSD::RCPtr<Chao::CSD::CScene>& GetStatScene(const char* name) {
-        if (name == "m_tag_bg_2") {
-            return m_tag_bg_2;
-        }
-
-        if (name == "m_tag_txt_2") {
-            return m_tag_txt_2;
-        }
-
-        if (name == "m_prgs_bg_2") {
-            return m_prgs_bg_2;
-        }
-
-        if (name == "m_prgs_bar_2") {
-            return m_prgs_bar_2;
-        }
-
-        if (name == "m_prgs_num_2") {
-            return m_prgs_num_2;
-        }
-    }
-
     Stat() {
         txt_num = 2;
         level = 0;
@@ -77,6 +50,10 @@ public:
         count = _count;
     }
 };
+
+// const char* _name, int _level, int _maxLevel, int _txt_num, int _count
+std::vector<Stat> statsDay = { Stat("speed", 9, 11, 1, 10), Stat("ring_energy", 6, 6, 2, 0) };
+std::vector<Stat> statsNight = { Stat("combat", 0, 31, 1, 0), Stat("strength", 0, 11, 2, 0), Stat("life", 0, 11, 3, 0), Stat("unleash", 0, 11, 4, 0), Stat("shield", 0, 11, 5, 0) };
 
 class CHudStatus : public Sonic::CGameObject
 {
@@ -101,6 +78,12 @@ class CHudStatus : public Sonic::CGameObject
     Chao::CSD::RCPtr<Chao::CSD::CScene> m_decide_bg;
 
     Chao::CSD::RCPtr<Chao::CSD::CScene> m_status_footer;
+
+    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_bg_2 = {};
+    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_txt_2 = {};
+    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bg_2 = {};
+    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bar_2 = {};
+    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_num_2 = {};
 
     float timeFooter = 0.0f;
     bool footerVisible = false;
@@ -135,8 +118,7 @@ class CHudStatus : public Sonic::CGameObject
 
     int statusIndex;
 
-    std::vector<Stat> statsDay = {};
-    std::vector<Stat> statsNight = {};
+    std::vector<Stat> currentStats = {};
 
     float selectDelay = -1;
 
@@ -145,6 +127,15 @@ class CHudStatus : public Sonic::CGameObject
     float medalSubImage = 0.0f;
 
 public:
+
+    Stat& CurrentStat() {
+        return currentStats[currentStatIndex];
+    }
+
+    int CurrentStatSizeMinusOne() {
+        return currentStats.size() - 1;
+    }
+
     void HudRemove() {
         if (!m_rcStatus || !m_spStatus) { return; }
 
@@ -173,25 +164,24 @@ public:
     }
 
     void RemoveStats() {
-        for (Stat& s : statsDay) {
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_tag_bg_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_tag_txt_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_bg_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_num_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_bar_2"));
+        for (int i = 0; i < m_tag_bg_2.size(); i++)
+        {
+            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_2[i]);
+            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_2[i]);
+            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_2[i]);
+            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_2[i]);
+            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_2[i]);
         }
-
-        for (Stat& s : statsNight) {
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_tag_bg_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_tag_txt_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_bg_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_num_2"));
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.GetStatScene("m_prgs_bar_2"));
-        }
+        m_tag_bg_2.clear();
+        m_tag_txt_2.clear();
+        m_prgs_bg_2.clear();
+        m_prgs_bar_2.clear();
+        m_prgs_num_2.clear();
     }
 
     void ToggleStats() {
         isWerehog = !isWerehog;
+        currentStats = isWerehog ? statsNight : statsDay;
 
         //Exp Bar
         if (m_tag_bg_1) {
@@ -243,60 +233,56 @@ public:
     }
 
     void Select(int index, bool up, bool reverse, bool quit = false) {
-        std::vector<Stat> currentStats = isWerehog ? statsNight : statsDay;
-        int max = isWerehog ? 4 : 1;
         if (quit) {
             if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-            if(currentStats[index - 1].GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*currentStats[index - 1].GetStatScene("m_tag_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(currentStats[index - 1].GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*currentStats[index - 1].GetStatScene("m_prgs_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(currentStats[index - 1].GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*currentStats[index - 1].GetStatScene("m_prgs_num_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(currentStats[index - 1].GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*currentStats[index - 1].GetStatScene("m_prgs_bar_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_tag_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_tag_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_num_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_num_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            if(m_prgs_bar_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
         }
         else {
             if (reverse) {
-                if (up && index == (isWerehog ? 4 : 1)) {
+                if (up && index == CurrentStatSizeMinusOne()) {
                     if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
 
                 if (up) {
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_tag_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_num_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bar_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
                 else {
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_tag_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_num_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if(currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*currentStats[std::clamp(index + 1, 0, max)].GetStatScene("m_prgs_bar_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+                    if (m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
                 }
             }
 
-            if(currentStats[index].GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*currentStats[index].GetStatScene("m_tag_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_tag_bg_2[index]) CSDCommon::PlayAnimation(*m_tag_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            if(currentStats[index].GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*currentStats[index].GetStatScene("m_prgs_bg_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_bg_2[index]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            if(currentStats[index].GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*currentStats[index].GetStatScene("m_prgs_num_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_num_2[index]) CSDCommon::PlayAnimation(*m_prgs_num_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
 
-            if(currentStats[index].GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*currentStats[index].GetStatScene("m_prgs_bar_2"), select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            if(m_prgs_bar_2[index]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
         }
     }
 
-    void AddStat() {
-        if ((isWerehog && currentStatIndex >= 5) || (!isWerehog && currentStatIndex >= 2)) { 
-            return; 
-        }
+    void AddStatCommon() {
+        currentStatIndex = std::clamp(currentStatIndex, 0, CurrentStatSizeMinusOne());
 
-        currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
-        Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
-        curStat.GetStatScene("m_tag_bg_2") = m_rcStatus->CreateScene("tag_bg_2");
-        if (curStat.GetStatScene("m_tag_bg_2")) curStat.GetStatScene("m_tag_bg_2")->SetHideFlag(false);
-        if (curStat.GetStatScene("m_tag_bg_2")) curStat.GetStatScene("m_tag_bg_2")->SetPosition(0.0f, y);
-        if (curStat.GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_tag_bg_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        Chao::CSD::RCPtr<Chao::CSD::CScene> _tag_bg_2 = m_rcStatus->CreateScene("tag_bg_2");
+        _tag_bg_2->SetHideFlag(false);
+        _tag_bg_2->SetPosition(0.0f, y);
+        CSDCommon::PlayAnimation(*_tag_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+
+        m_tag_bg_2.emplace_back(_tag_bg_2);
 
         const char* txtScene;
 
-        switch (curStat.GetTextNum())
+        switch (CurrentStat().GetTextNum())
         {
         case 1:
             txtScene = "tag_txt_2";
@@ -318,124 +304,64 @@ public:
             break;
         }
 
-        curStat.GetStatScene("m_tag_txt_2") = m_rcStatus->CreateScene(txtScene);
-        if (curStat.GetStatScene("m_tag_txt_2")) curStat.GetStatScene("m_tag_txt_2")->SetHideFlag(false);
-        if (curStat.GetStatScene("m_tag_txt_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_tag_txt_2"), (curStat.GetTextNum() < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        Chao::CSD::RCPtr<Chao::CSD::CScene> _tag_txt_2 = m_rcStatus->CreateScene(txtScene);
+        _tag_txt_2->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*_tag_txt_2, (CurrentStat().GetTextNum() < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        m_tag_txt_2.emplace_back(_tag_txt_2);
 
-        curStat.GetStatScene("m_prgs_bg_2") = m_rcStatus->CreateScene("prgs_bg_2");
-        if (curStat.GetStatScene("m_prgs_bg_2")) curStat.GetStatScene("m_prgs_bg_2")->SetHideFlag(false);
-        if (curStat.GetStatScene("m_prgs_bg_2")) curStat.GetStatScene("m_prgs_bg_2")->SetPosition(0.0f, y);
-        if (curStat.GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_bg_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        Chao::CSD::RCPtr<Chao::CSD::CScene> _prgs_bg_2 = m_rcStatus->CreateScene("prgs_bg_2");
+        _prgs_bg_2->SetHideFlag(false);
+        _prgs_bg_2->SetPosition(0.0f, y);
+        CSDCommon::PlayAnimation(*_prgs_bg_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        m_prgs_bg_2.emplace_back(_prgs_bg_2);
 
-        curStat.GetStatScene("m_prgs_num_2") = m_rcStatus->CreateScene("prgs_num_2");
-        if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->SetHideFlag(false);
-        if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->SetPosition(0.0f, y);
+        Chao::CSD::RCPtr<Chao::CSD::CScene> _prgs_num_2 = m_rcStatus->CreateScene("prgs_num_2");
+        _prgs_num_2->SetHideFlag(false);
+        _prgs_num_2->SetPosition(0.0f, y);
 
-        if (curStat.GetLevel() >= curStat.GetMaxLevel()) {
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num")->SetHideFlag(1);
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("img")->SetHideFlag(1);
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("txt")->SetHideFlag(0);
+        if (CurrentStat().GetLevel() >= CurrentStat().GetMaxLevel()) {
+            _prgs_num_2->GetNode("num")->SetHideFlag(1);
+            _prgs_num_2->GetNode("img")->SetHideFlag(1);
+            _prgs_num_2->GetNode("txt")->SetHideFlag(0);
         }
         else {
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num")->SetText(std::to_string(curStat.GetLevel()).c_str());
+            _prgs_num_2->GetNode("num")->SetText(std::to_string(CurrentStat().GetLevel()).c_str());
         }
 
-        if (curStat.GetCount() == 0) {
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num_2")->SetHideFlag(1);
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("img_2")->SetHideFlag(1);
+        if (CurrentStat().GetCount() == 0) {
+            _prgs_num_2->GetNode("num_2")->SetHideFlag(1);
+            _prgs_num_2->GetNode("img_2")->SetHideFlag(1);
         }
         else {
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num_2")->SetText(std::to_string(curStat.GetCount()).c_str());
+            _prgs_num_2->GetNode("num_2")->SetText(std::to_string(CurrentStat().GetCount()).c_str());
         }
 
-        if (curStat.GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_num_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        CSDCommon::PlayAnimation(*_prgs_num_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        m_prgs_num_2.emplace_back(_prgs_num_2);
 
-        curStat.GetStatScene("m_prgs_bar_2") = m_rcStatus->CreateScene("prgs_bar_2");
-        if (curStat.GetStatScene("m_prgs_bar_2")) curStat.GetStatScene("m_prgs_bar_2")->SetHideFlag(false);
-        if (curStat.GetStatScene("m_prgs_bar_2")) curStat.GetStatScene("m_prgs_bar_2")->SetPosition(0.0f, y);
-        if (curStat.GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_bar_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
+        Chao::CSD::RCPtr<Chao::CSD::CScene> _prgs_bar_2 = m_rcStatus->CreateScene("prgs_bar_2");
+        _prgs_bar_2->SetHideFlag(false);
+        _prgs_bar_2->SetPosition(0.0f, y);
+        CSDCommon::PlayAnimation(*_prgs_bar_2, intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
+        m_prgs_bar_2.emplace_back(_prgs_bar_2);
         y += (isWerehog ? 64.0f : 73.0f);
+    }
 
-        statDelay = 0.17f;
-
-        Common::PlaySoundStatic(wooshHandle, 1000029);
+    void AddStat(bool woosh = true) {
+        if (currentStatIndex >= currentStats.size()) {
+            return;
+        }
+        AddStatCommon();
+        if (woosh) { Common::PlaySoundStatic(wooshHandle, 1000029); }
     }
 
     void AddAllStats() {
-        for (int i = 0; i < (isWerehog ? 5 : 2); i++)
+        selectDelay = 0.65f;
+        for (int i = 0; i < currentStats.size(); i++)
         {
             currentStatIndex = i;
-            Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
-            curStat.GetStatScene("m_tag_bg_2") = m_rcStatus->CreateScene("tag_bg_2");
-            if (curStat.GetStatScene("m_tag_bg_2")) curStat.GetStatScene("m_tag_bg_2")->SetHideFlag(false);
-            if (curStat.GetStatScene("m_tag_bg_2")) curStat.GetStatScene("m_tag_bg_2")->SetPosition(0.0f, y);
-            if (curStat.GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_tag_bg_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
-            const char* txtScene;
-
-            switch (curStat.GetTextNum())
-            {
-            case 1:
-                txtScene = "tag_txt_2";
-                break;
-            case 2:
-                txtScene = "tag_txt_3";
-                break;
-            case 3:
-                txtScene = "tag_txt_4";
-                break;
-            case 4:
-                txtScene = "tag_txt_5";
-                break;
-            case 5:
-                txtScene = "tag_txt_6";
-                break;
-            default:
-                txtScene = "tag_txt_2";
-                break;
-            }
-
-            curStat.GetStatScene("m_tag_txt_2") = m_rcStatus->CreateScene(txtScene);
-            if (curStat.GetStatScene("m_tag_txt_2")) curStat.GetStatScene("m_tag_txt_2")->SetHideFlag(false);
-            if (curStat.GetStatScene("m_tag_txt_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_tag_txt_2"), (curStat.GetTextNum() < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
-            curStat.GetStatScene("m_prgs_bg_2") = m_rcStatus->CreateScene("prgs_bg_2");
-            if (curStat.GetStatScene("m_prgs_bg_2")) curStat.GetStatScene("m_prgs_bg_2")->SetHideFlag(false);
-            if (curStat.GetStatScene("m_prgs_bg_2")) curStat.GetStatScene("m_prgs_bg_2")->SetPosition(0.0f, y);
-            if (curStat.GetStatScene("m_prgs_bg_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_bg_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
-            curStat.GetStatScene("m_prgs_num_2") = m_rcStatus->CreateScene("prgs_num_2");
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->SetHideFlag(false);
-            if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->SetPosition(0.0f, y);
-
-            if (curStat.GetLevel() >= curStat.GetMaxLevel()) {
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num")->SetHideFlag(1);
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("img")->SetHideFlag(1);
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("txt")->SetHideFlag(0);
-            }
-            else {
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num")->SetText(std::to_string(curStat.GetLevel()).c_str());
-            }
-
-            if (curStat.GetCount() == 0) {
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num_2")->SetHideFlag(1);
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("img_2")->SetHideFlag(1);
-            }
-            else {
-                if (curStat.GetStatScene("m_prgs_num_2")) curStat.GetStatScene("m_prgs_num_2")->GetNode("num_2")->SetText(std::to_string(curStat.GetCount()).c_str());
-            }
-
-            if (curStat.GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_num_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
-            curStat.GetStatScene("m_prgs_bar_2") = m_rcStatus->CreateScene("prgs_bar_2");
-            if (curStat.GetStatScene("m_prgs_bar_2")) curStat.GetStatScene("m_prgs_bar_2")->SetHideFlag(false);
-            if (curStat.GetStatScene("m_prgs_bar_2")) curStat.GetStatScene("m_prgs_bar_2")->SetPosition(0.0f, y);
-            if (curStat.GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*curStat.GetStatScene("m_prgs_bar_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-
-            y += (isWerehog ? 64.0f : 73.0f);
+            AddStatCommon();
         }
-        selectDelay = 0.65f;
     }
 
     void Outro() {
@@ -458,17 +384,15 @@ public:
 
         if(m_medal_m_gauge) CSDCommon::PlayAnimation(*m_medal_m_gauge, "Intro_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
 
-        currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
-        Stat curStat = isWerehog ? statsNight[currentStatIndex] : statsDay[currentStatIndex];
+        currentStatIndex = std::clamp(currentStatIndex, 0,  CurrentStatSizeMinusOne());
 
-        std::vector<Stat> currentStats = isWerehog ? statsNight : statsDay;
-        for (size_t i = 0; i < currentStats.size(); i++)
+        for (int i = 0; i < m_tag_bg_2.size(); i++)
         {
-            Stat s = currentStats[i];
-            if (s.GetStatScene("m_tag_bg_2")) CSDCommon::PlayAnimation(*s.GetStatScene("m_tag_bg_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
-            if (s.GetStatScene("m_tag_txt_2")) CSDCommon::PlayAnimation(*s.GetStatScene("m_tag_txt_2"), (curStat.GetTextNum() < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
-            if (s.GetStatScene("m_prgs_num_2")) CSDCommon::PlayAnimation(*s.GetStatScene("m_prgs_num_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
-            if (s.GetStatScene("m_prgs_bar_2")) CSDCommon::PlayAnimation(*s.GetStatScene("m_prgs_bar_2"), intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            CSDCommon::PlayAnimation(*m_tag_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            CSDCommon::PlayAnimation(*m_tag_txt_2[i], (CurrentStat().GetTextNum() < 3) ? intro2() : "Intro_ev_Anim_2", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_num_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bg_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bar_2[i], intro2(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0, 0.0, false, true);
         }
 
         // Exp Bar
@@ -484,65 +408,6 @@ public:
 
         EndDelay = 1.0f;
         exit = true;
-    }
-
-    void AddCallback
-    (
-        const Hedgehog::Base::THolder<Sonic::CWorld>& worldHolder,
-        Sonic::CGameDocument* pGameDocument,
-        const boost::shared_ptr<Hedgehog::Database::CDatabase>& spDatabase
-    ) override
-    {
-        // const char* _name, int _level, int _maxLevel, int _txt_num, int _count
-        statsDay = { Stat("speed", 9, 11, 1, 10), Stat("ring_energy", 6, 6, 2, 0) };
-
-        statsNight = { Stat("combat", 0, 31, 1, 0), Stat("strength", 0, 11, 2, 0), Stat("life", 0, 11, 3, 0), Stat("unleash", 0, 11, 4, 0), Stat("shield", 0, 11, 5, 0) };
-
-        isWerehog = false;
-
-        Sonic::CApplicationDocument::GetInstance()->AddMessageActor("GameObject", this);
-        pGameDocument->AddUpdateUnit("1", this);
-
-        // initialize ui
-        Sonic::CCsdDatabaseWrapper wrapper(m_pMember->m_pGameDocument->m_pMember->m_spDatabase.get());
-
-        auto spCsdProject = wrapper.GetCsdProject("ui_status");
-        m_rcStatus = spCsdProject->m_rcProject;
-
-        // Exp Bar
-        m_tag_bg_1 = m_rcStatus->CreateScene("tag_bg_1");
-
-        m_tag_txt_1 = m_rcStatus->CreateScene("tag_txt_1");
-
-        m_prgs_bg_1 = m_rcStatus->CreateScene("prgs_bg_1");
-
-        m_prgs_bar_1 = m_rcStatus->CreateScene("prgs_bar_1");
-
-        m_prgs_num_1 = m_rcStatus->CreateScene("prgs_num_1");
-
-        // Quit Button
-        m_decide_bg = m_rcStatus->CreateScene("decide_bg");
-
-        // Bottom Buttons
-        m_status_footer = m_rcStatus->CreateScene("status_footer");
-
-        // Header
-        m_status_title = m_rcStatus->CreateScene("status_title");
-
-        // Character Portrait
-        m_logo = m_rcStatus->CreateScene("logo");
-
-        //Medals (Top Right)
-        m_medal_info = m_rcStatus->CreateScene("medal_info");
-
-        m_medal_s_gauge = m_rcStatus->CreateScene("medal_s_gauge");
-
-        m_medal_m_gauge = m_rcStatus->CreateScene("medal_m_gauge");
-
-        m_spStatus = boost::make_shared<Sonic::CGameObjectCSD>(m_rcStatus, 0.5f, "HUD_B2", false);
-        Sonic::CGameDocument::GetInstance()->AddGameObject(m_spStatus, "main", this);
-
-        Start();
     }
 
     void Start() {
@@ -623,13 +488,68 @@ public:
         exit = false;
     }
 
+    void AddCallback
+    (
+        const Hedgehog::Base::THolder<Sonic::CWorld>& worldHolder,
+        Sonic::CGameDocument* pGameDocument,
+        const boost::shared_ptr<Hedgehog::Database::CDatabase>& spDatabase
+    ) override
+    {
+        isWerehog = false;
+        currentStats = isWerehog ? statsNight : statsDay;
+
+        Sonic::CApplicationDocument::GetInstance()->AddMessageActor("GameObject", this);
+        pGameDocument->AddUpdateUnit("1", this);
+
+        // initialize ui
+        Sonic::CCsdDatabaseWrapper wrapper(m_pMember->m_pGameDocument->m_pMember->m_spDatabase.get());
+
+        auto spCsdProject = wrapper.GetCsdProject("ui_status");
+        m_rcStatus = spCsdProject->m_rcProject;
+
+        // Exp Bar
+        m_tag_bg_1 = m_rcStatus->CreateScene("tag_bg_1");
+
+        m_tag_txt_1 = m_rcStatus->CreateScene("tag_txt_1");
+
+        m_prgs_bg_1 = m_rcStatus->CreateScene("prgs_bg_1");
+
+        m_prgs_bar_1 = m_rcStatus->CreateScene("prgs_bar_1");
+
+        m_prgs_num_1 = m_rcStatus->CreateScene("prgs_num_1");
+
+        // Quit Button
+        m_decide_bg = m_rcStatus->CreateScene("decide_bg");
+
+        // Bottom Buttons
+        m_status_footer = m_rcStatus->CreateScene("status_footer");
+
+        // Header
+        m_status_title = m_rcStatus->CreateScene("status_title");
+
+        // Character Portrait
+        m_logo = m_rcStatus->CreateScene("logo");
+
+        //Medals (Top Right)
+        m_medal_info = m_rcStatus->CreateScene("medal_info");
+
+        m_medal_s_gauge = m_rcStatus->CreateScene("medal_s_gauge");
+
+        m_medal_m_gauge = m_rcStatus->CreateScene("medal_m_gauge");
+
+        m_spStatus = boost::make_shared<Sonic::CGameObjectCSD>(m_rcStatus, 0.5f, "HUD_B2", false);
+        Sonic::CGameDocument::GetInstance()->AddGameObject(m_spStatus, "main", this);
+
+        Start();
+    }
+
     void UpdateParallel
     (
         const Hedgehog::Universe::SUpdateInfo& updateInfo
     ) override
     {
         Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
-
+        currentStats = isWerehog ? statsNight : statsDay;
         if (!exit) {
             if (statDelayStart != -1) {
                 statDelayStart -= updateInfo.DeltaTime;
@@ -637,6 +557,7 @@ public:
                     AddStat();
                     selectDelay = 0.65f;
                     statDelayStart = -1;
+                    statDelay = 0.17f;
                 }
             }
             else {
@@ -653,7 +574,8 @@ public:
                 if (statDelay <= 0) {
                     currentStatIndex++;
                     AddStat();
-                    currentStatIndex = std::clamp(currentStatIndex, 0, (isWerehog ? 4 : 1));
+                    statDelay = 0.17f;
+                    currentStatIndex = std::clamp(currentStatIndex, 0, CurrentStatSizeMinusOne());
                 }
             }
 
@@ -693,8 +615,8 @@ public:
 
             if (selectDelay == -1 && statDelayStart == -1) {
                 if (padState->IsTapped(Sonic::eKeyState_LeftStickUp) || padState->IsTapped(Sonic::eKeyState_DpadUp)) {
-                    if (statusIndex == (isWerehog ? 5 : 2)) {
-                        statusIndex = (isWerehog ? 4 : 1);
+                    if (statusIndex == currentStats.size()) {
+                        statusIndex = CurrentStatSizeMinusOne();
                         Select(statusIndex, true, true);
                         Common::PlaySoundStatic(selectHandle, 1000039);
                     }
@@ -707,13 +629,13 @@ public:
                     }
                 }
                 if (padState->IsTapped(Sonic::eKeyState_LeftStickDown) || padState->IsTapped(Sonic::eKeyState_DpadDown)) {
-                    if (statusIndex + 1 <= (isWerehog ? 4 : 1)) {
+                    if (statusIndex + 1 <= CurrentStatSizeMinusOne()) {
                         statusIndex++;
                         Select(statusIndex, false, true);
                         Common::PlaySoundStatic(selectHandle, 1000039);
                     }
-                    else if (statusIndex + 1 == (isWerehog ? 5 : 2)) {
-                        statusIndex = (isWerehog ? 5 : 2);
+                    else if (statusIndex + 1 == currentStats.size()) {
+                        statusIndex = currentStats.size();
                         Select(statusIndex, false, true, true);
                         Common::PlaySoundStatic(selectHandle, 1000039);
                     }
@@ -743,7 +665,7 @@ public:
     }
 
     bool IsQuit() {
-        return statusIndex == (isWerehog ? 5 : 2);
+        return statusIndex == currentStats.size();
     }
 };
 
