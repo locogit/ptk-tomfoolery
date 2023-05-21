@@ -201,7 +201,7 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 			HudResult_CHudResultRemoveCallback(This, nullptr, nullptr);
 			WRITE_MEMORY(0x10B96E6, uint8_t, 0xE8, 0x85, 0xD2, 0xFF, 0xFF);
 			WRITE_MEMORY(0x10B9A7C, uint8_t, 0xE8, 0xCF, 0x7A, 0x5A, 0xFF);
-			WRITE_MEMORY(0x10B9976, uint8_t, 0xE8, 0xD5, 0x7B, 0x5A, 0xFF);
+			//WRITE_MEMORY(0x10B9976, uint8_t, 0xE8, 0xD5, 0x7B, 0x5A, 0xFF);
 			return;
 		}
 	}
@@ -507,86 +507,81 @@ HOOK(void, __fastcall, HudResult_CHudResultAdvance, 0x10B96D0, Sonic::CGameObjec
 	}
 	case HudResult::ResultState::Footer:
 	{
-		if (*(uint32_t*)0x10B96E6 == 0xFFD285E8)
+		static SharedPtrTypeless soundHandle;
+		Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
+		if (padState->IsTapped(Sonic::EKeyState::eKeyState_A))
 		{
-			static SharedPtrTypeless soundHandle;
-			Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
-			if (padState->IsTapped(Sonic::EKeyState::eKeyState_A))
+			m_resultStateNew = HudResult::ResultState::Medal;
+
+			rcItemResultWindow->SetHideFlag(false);
+			CSDCommon::PlayAnimation(*rcItemResultWindow, motion_so_ev_2, Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+
+			rcItemResultContents->SetHideFlag(false);
+			CSDCommon::PlayAnimation(*rcItemResultContents, "usual_Anim_2", Chao::CSD::eMotionRepeatType_Loop, 1, 0);
+
+			for (int i = 0; i < HudResult::ResultNumType::COUNT; i++)
 			{
-				m_resultStateNew = HudResult::ResultState::Medal;
-
-				rcItemResultWindow->SetHideFlag(false);
-				CSDCommon::PlayAnimation(*rcItemResultWindow, motion_so_ev_2, Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-
-				rcItemResultContents->SetHideFlag(false);
-				CSDCommon::PlayAnimation(*rcItemResultContents, "usual_Anim_2", Chao::CSD::eMotionRepeatType_Loop, 1, 0);
-
-				for (int i = 0; i < HudResult::ResultNumType::COUNT; i++)
+				if (rcResultNum[i])
 				{
-					if (rcResultNum[i])
-					{
-						Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNum[i]);
-					}
+					Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNum[i]);
 				}
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNewRecordTime);
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNewRecordScore);
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultRankText);
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultRank);
 			}
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNewRecordTime);
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultNewRecordScore);
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultRankText);
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultRank);
 		}
 
 		break;
 	}
 	case HudResult::ResultState::Medal:
 	{
-		if (*(uint32_t*)0x10B96E6 == 0xFFD285E8) {
-			Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
-			medalTimer += in_rUpdateInfo.DeltaTime;
-			if (padState->IsTapped(Sonic::EKeyState::eKeyState_A) && medalTimer >= 0.5f)
-			{
-				m_resultStateNew = HudResult::ResultState::Status;
+		Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
+		medalTimer += in_rUpdateInfo.DeltaTime;
+		if (padState->IsTapped(Sonic::EKeyState::eKeyState_A) && medalTimer >= 0.5f)
+		{
+			m_resultStateNew = HudResult::ResultState::Status;
 
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultTitle);
-				Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultFooter);
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultTitle);
+			Chao::CSD::CProject::DestroyScene(rcProjectResult.Get(), rcResultFooter);
 
-				CSDCommon::PlayAnimation(*rcItemResultWindow, motion_so_ev_2, Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+			CSDCommon::PlayAnimation(*rcItemResultWindow, motion_so_ev_2, Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
 
-				CSDCommon::FreezeMotion(*rcItemResultContents);
-				rcItemResultContents->SetHideFlag(true);
+			CSDCommon::FreezeMotion(*rcItemResultContents);
+			rcItemResultContents->SetHideFlag(true);
 
-				HudStatus::Kill();
-				HudStatus::Start();
+			HudStatus::Kill();
+			HudStatus::Start();
 
-				medalTimer = 0.0f;
-			}
+			medalTimer = 0.0f;
 		}
 		break;
 	}
 	case HudResult::ResultState::Status: {
-		if (*(uint32_t*)0x10B96E6 == 0xFFD285E8) {
-			static SharedPtrTypeless soundHandle;
-			Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
-			statusTimer += in_rUpdateInfo.DeltaTime;
-			if (padState->IsTapped(Sonic::EKeyState::eKeyState_A) && statusTimer >= 2.5f && HudStatus::CanEnd())
-			{
-				m_resultStateNew = HudResult::ResultState::FadeOut;
+		static SharedPtrTypeless soundHandle;
+		Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
+		statusTimer += in_rUpdateInfo.DeltaTime;
+		if (padState->IsTapped(Sonic::EKeyState::eKeyState_A) && statusTimer >= 2.5f && HudStatus::CanEnd())
+		{
+			m_resultStateNew = HudResult::ResultState::FadeOut;
 
-				statusTimer = 0.0f;
-				HudStatus::End();
+			statusTimer = 0.0f;
+			HudStatus::End();
 
-				Common::PlaySoundStatic(soundHandle, 1000027);
+			Common::PlaySoundStatic(soundHandle, 1000027);
 
-				HudLoading::StartFadeOut();
-			}
+			HudLoading::StartFadeOut();
 		}
 		break;
 	}
 	case HudResult::ResultState::FadeOut:
-		if (HudStatus::EndDelayFinish()) {
-			WRITE_JUMP(0x10B96E6, (void*)0x10B974B);
-			WRITE_NOP(0x10B9976, 5);
-			HudStatus::Kill();
-			m_resultStateNew = HudResult::ResultState::End;
+		if (*(uint32_t*)0x10B96E6 == 0xFFD285E8) {
+			if (HudStatus::EndDelayFinish()) {
+				HudStatus::Kill();
+				m_resultStateNew = HudResult::ResultState::End;
+				WRITE_JUMP(0x10B96E6, (void*)0x10B974B);
+				WRITE_NOP(0x10B9976, 5);
+			}
 		}
 		break;
 	

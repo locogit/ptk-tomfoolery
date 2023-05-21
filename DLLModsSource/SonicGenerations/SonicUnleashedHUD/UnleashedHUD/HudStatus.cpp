@@ -6,12 +6,38 @@ static SharedPtrTypeless wooshHandle;
 static SharedPtrTypeless selectHandle;
 static SharedPtrTypeless switchHandle;
 
+std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_bg_2 = {};
+std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_txt_2 = {};
+std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bg_2 = {};
+std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bar_2 = {};
+std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_num_2 = {};
+
+int currentStatIndex = 0;
+int statusIndex = 0;
+
+const char* intro() {
+    return isWerehog ? "Intro_ev_Anim" : "Intro_so_Anim";
+}
+
+const char* select() {
+    return isWerehog ? "select_ev_Anim" : "select_so_Anim";
+}
+
+const char* outro() {
+    return isWerehog ? "Outro_ev_Anim" : "Outro_so_Anim";
+}
+
+const char* intro2() {
+    return isWerehog ? "Intro_ev_Anim_2" : "Intro_so_Anim_2";
+}
+
 class Stat {
     const char* name;
     int txt_num;
     int level;
     int  maxLevel;
     int count;
+    float levelProgress;
 
 public:
     const char* &GetName() {
@@ -34,11 +60,20 @@ public:
         return count;
     }
 
+    float& GetLevelProgress() {
+        return levelProgress;
+    }
+
+    void Update(float dt) {
+
+    }
+
     Stat() {
         txt_num = 2;
         level = 0;
         count = 0;
         maxLevel = 0;
+        levelProgress = 0;
         name = "null";
     }
 
@@ -48,12 +83,25 @@ public:
         maxLevel = _maxLevel;
         txt_num = _txt_num;
         count = _count;
+        levelProgress = 0;
     }
 };
 
 // const char* _name, int _level, int _maxLevel, int _txt_num, int _count
 std::vector<Stat> statsDay = { Stat("speed", 9, 11, 1, 10), Stat("ring_energy", 6, 6, 2, 0) };
 std::vector<Stat> statsNight = { Stat("combat", 0, 31, 1, 0), Stat("strength", 0, 11, 2, 0), Stat("life", 0, 11, 3, 0), Stat("unleash", 0, 11, 4, 0), Stat("shield", 0, 11, 5, 0) };
+
+std::vector<Stat>& CurrentStats() {
+    return isWerehog ? statsNight : statsDay;
+}
+
+Stat& CurrentStat() {
+    return CurrentStats()[currentStatIndex];
+}
+
+int CurrentStatSizeMinusOne() {
+    return CurrentStats().size() - 1;
+}
 
 class CHudStatus : public Sonic::CGameObject
 {
@@ -79,17 +127,10 @@ class CHudStatus : public Sonic::CGameObject
 
     Chao::CSD::RCPtr<Chao::CSD::CScene> m_status_footer;
 
-    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_bg_2 = {};
-    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_tag_txt_2 = {};
-    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bg_2 = {};
-    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_bar_2 = {};
-    std::vector<Chao::CSD::RCPtr<Chao::CSD::CScene>> m_prgs_num_2 = {};
-
     float timeFooter = 0.0f;
     bool footerVisible = false;
 
     float statDelay = 0.17f;
-    int currentStatIndex = 0;
     float y = 0.0f;
 
     float statDelayStart = 0.0f;
@@ -100,26 +141,6 @@ class CHudStatus : public Sonic::CGameObject
 
     bool exit = false;
 
-    const char* intro() {
-        return isWerehog ? "Intro_ev_Anim" : "Intro_so_Anim";
-    }
-
-    const char* select() {
-        return isWerehog ? "select_ev_Anim" : "select_so_Anim";
-    }
-
-    const char* outro() {
-        return isWerehog ? "Outro_ev_Anim" : "Outro_so_Anim";
-    }
-
-    const char* intro2() {
-        return isWerehog ? "Intro_ev_Anim_2" : "Intro_so_Anim_2";
-    }
-
-    int statusIndex;
-
-    std::vector<Stat> currentStats = {};
-
     float selectDelay = -1;
 
     float quitSoundTimer = 0.0f;
@@ -127,14 +148,6 @@ class CHudStatus : public Sonic::CGameObject
     float medalSubImage = 0.0f;
 
 public:
-
-    Stat& CurrentStat() {
-        return currentStats[currentStatIndex];
-    }
-
-    int CurrentStatSizeMinusOne() {
-        return currentStats.size() - 1;
-    }
 
     void HudRemove() {
         if (!m_rcStatus || !m_spStatus) { return; }
@@ -166,12 +179,13 @@ public:
     void RemoveStats() {
         for (int i = 0; i < m_tag_bg_2.size(); i++)
         {
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_2[i]);
-            Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_2[i]);
+            if(m_tag_bg_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_bg_2[i]);
+            if(m_tag_txt_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_tag_txt_2[i]);
+            if(m_prgs_bg_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bg_2[i]);
+            if(m_prgs_bar_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_bar_2[i]);
+            if(m_prgs_num_2[i]) Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), m_prgs_num_2[i]);
         }
+
         m_tag_bg_2.clear();
         m_tag_txt_2.clear();
         m_prgs_bg_2.clear();
@@ -180,49 +194,44 @@ public:
     }
 
     void ToggleStats() {
+        if(!m_tag_bg_1 ||
+            !m_tag_txt_1 ||
+            !m_prgs_bg_1 ||
+            !m_prgs_bar_1 ||
+            !m_prgs_num_1 ||
+            !m_decide_bg ||
+            !m_status_title ||
+            !m_logo) {
+            return;
+        }
+
         isWerehog = !isWerehog;
-        currentStats = isWerehog ? statsNight : statsDay;
+        CurrentStats() = isWerehog ? statsNight : statsDay;
 
         //Exp Bar
-        if (m_tag_bg_1) {
-            m_tag_bg_1->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        }
+        m_tag_bg_1->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_tag_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
-        if (m_tag_txt_1) {
-            m_tag_txt_1->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        }
+        m_tag_txt_1->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_tag_txt_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
-        if (m_prgs_bg_1) {
-            m_prgs_bg_1->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        }
+        m_prgs_bg_1->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_prgs_bg_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
-        if (m_prgs_bar_1) {
-            m_prgs_bar_1->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        }
+        m_prgs_bar_1->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
-        if (m_prgs_num_1) {
-            m_prgs_num_1->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
-        }
+        m_prgs_num_1->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
-        if (m_decide_bg) {
-            m_decide_bg->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, 100.0, 100.0);
-        }
+        m_decide_bg->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_decide_bg, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, 100.0, 100.0);
 
-        if (m_status_title) {
-            m_status_title->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, m_status_title->m_MotionEndFrame);
-        }
+        m_status_title->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_status_title, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 0.0, m_status_title->m_MotionEndFrame);
 
-        if (m_logo) {
-            m_logo->SetHideFlag(false);
-            CSDCommon::PlayAnimation(*m_logo, "Switch_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0, 20.0, false, !isWerehog);
-        }
+        m_logo->SetHideFlag(false);
+        CSDCommon::PlayAnimation(*m_logo, "Switch_Anim", Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0, 20.0, false, !isWerehog);
 
         currentStatIndex = 0;
         statusIndex = 0;
@@ -233,40 +242,62 @@ public:
     }
 
     void Select(int index, bool up, bool reverse, bool quit = false) {
+        if (!m_decide_bg) { return; }
+
+        if (quit && (!m_tag_bg_2[index - 1] || 
+            !m_prgs_bg_2[index - 1] || 
+            !m_prgs_num_2[index - 1] || 
+            !m_prgs_bar_2[index - 1])) { return; }
+
+        if(reverse && up && (!m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())] || 
+            !m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())] || 
+            !m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())] ||
+            !m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())])) {
+            return;
+        }
+
+        if (reverse && !up && (!m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())] ||
+            !m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())] ||
+            !m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())] ||
+            !m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())])) {
+            return;
+        }
+
+        if(!quit && (!m_tag_bg_2[index] ||
+            !m_prgs_bg_2[index] ||
+            !m_prgs_num_2[index] ||
+            !m_prgs_bar_2[index])) {
+            return;
+        }
+
         if (quit) {
-            if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-            if(m_tag_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_tag_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(m_prgs_bg_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(m_prgs_num_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_num_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-            if(m_prgs_bar_2[index - 1]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            CSDCommon::PlayAnimation(*m_tag_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bg_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_num_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bar_2[index - 1], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
         }
         else {
-            if (reverse) {
-                if (up && index == CurrentStatSizeMinusOne()) {
-                    if(m_decide_bg) CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                }
+            CSDCommon::PlayAnimation(*m_tag_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            CSDCommon::PlayAnimation(*m_prgs_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            CSDCommon::PlayAnimation(*m_prgs_num_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+            CSDCommon::PlayAnimation(*m_prgs_bar_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+        }
 
-                if (up) {
-                    if (m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                }
-                else {
-                    if (m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                    if (m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())]) CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
-                }
-            }
-
-            if(m_tag_bg_2[index]) CSDCommon::PlayAnimation(*m_tag_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-
-            if(m_prgs_bg_2[index]) CSDCommon::PlayAnimation(*m_prgs_bg_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-
-            if(m_prgs_num_2[index]) CSDCommon::PlayAnimation(*m_prgs_num_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
-
-            if(m_prgs_bar_2[index]) CSDCommon::PlayAnimation(*m_prgs_bar_2[index], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
+        if (!quit && reverse && up && index != CurrentStatSizeMinusOne()) {
+            CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index + 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        }
+        else if (!quit && reverse && up && index == CurrentStatSizeMinusOne()) {
+            CSDCommon::PlayAnimation(*m_decide_bg, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+        }
+        else if (!quit && reverse && !up) {
+            CSDCommon::PlayAnimation(*m_tag_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bg_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_num_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
+            CSDCommon::PlayAnimation(*m_prgs_bar_2[std::clamp(index - 1, 0, CurrentStatSizeMinusOne())], select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
         }
     }
 
@@ -348,7 +379,7 @@ public:
     }
 
     void AddStat(bool woosh = true) {
-        if (currentStatIndex >= currentStats.size()) {
+        if (currentStatIndex >= CurrentStats().size()) {
             return;
         }
         AddStatCommon();
@@ -357,7 +388,7 @@ public:
 
     void AddAllStats() {
         selectDelay = 0.65f;
-        for (int i = 0; i < currentStats.size(); i++)
+        for (int i = 0; i < CurrentStats().size(); i++)
         {
             currentStatIndex = i;
             AddStatCommon();
@@ -496,7 +527,7 @@ public:
     ) override
     {
         isWerehog = false;
-        currentStats = isWerehog ? statsNight : statsDay;
+        CurrentStats() = isWerehog ? statsNight : statsDay;
 
         Sonic::CApplicationDocument::GetInstance()->AddMessageActor("GameObject", this);
         pGameDocument->AddUpdateUnit("1", this);
@@ -543,116 +574,146 @@ public:
         Start();
     }
 
+    void MedalUpdate(const Hedgehog::Universe::SUpdateInfo& updateInfo) {
+        if (!m_medal_info) {
+            return;
+        }
+
+        medalSubImage += updateInfo.DeltaTime * 25.0f;
+
+        if (medalSubImage >= 30) {
+            medalSubImage = 0;
+        }
+
+        m_medal_info->GetNode("sun")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+        m_medal_info->GetNode("sun_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+
+        m_medal_info->GetNode("moon")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+        m_medal_info->GetNode("moon_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
+    }
+
+    void ControlCharacterSwitch(const Hedgehog::Universe::SUpdateInfo& updateInfo) {
+        if (selectDelay != -1 || statDelayStart != -1) { return; }
+
+        if (switchCooldown > 0) {
+            switchCooldown -= updateInfo.DeltaTime;
+            return;
+        }
+
+        Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
+
+        if (padState->IsTapped(Sonic::eKeyState_LeftBumper) || padState->IsTapped(Sonic::eKeyState_RightBumper)) {
+            ToggleStats();
+            switchCooldown = 0.5f;
+            Common::PlaySoundStatic(switchHandle, 1000028);
+        }
+    }
+
+    void ControlStatSelection() {
+        if (selectDelay != -1 || statDelayStart != -1) {
+            return;
+        }
+
+        Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
+
+        bool isUp = padState->IsTapped(Sonic::eKeyState_LeftStickUp) || padState->IsTapped(Sonic::eKeyState_DpadUp);
+
+        if (isUp && statusIndex == CurrentStats().size()) {
+            statusIndex = CurrentStatSizeMinusOne();
+            Select(statusIndex, true, true);
+            Common::PlaySoundStatic(selectHandle, 1000039);
+        }
+        else if (isUp && statusIndex != CurrentStats().size() && statusIndex != 0) {
+            statusIndex = (statusIndex - 1 >= 0) ? statusIndex - 1 : statusIndex;
+            Select(statusIndex, true, true);
+            Common::PlaySoundStatic(selectHandle, 1000039);
+        }
+
+        bool isDown = padState->IsTapped(Sonic::eKeyState_LeftStickDown) || padState->IsTapped(Sonic::eKeyState_DpadDown);
+
+        if (isDown && statusIndex + 1 <= CurrentStatSizeMinusOne()) {
+            statusIndex++;
+            Select(statusIndex, false, true);
+            Common::PlaySoundStatic(selectHandle, 1000039);
+        }
+        else if (isDown && statusIndex + 1 == CurrentStats().size()) {
+            statusIndex = CurrentStats().size();
+            Select(statusIndex, false, true, true);
+            Common::PlaySoundStatic(selectHandle, 1000039);
+        }
+    }
+
+    void FooterTimer(const Hedgehog::Universe::SUpdateInfo& updateInfo) {
+        if (footerVisible) { return; }
+        if (!m_status_footer) { return; }
+
+        bool finished = timeFooter >= 1.06f;
+
+        m_status_footer->SetHideFlag(!finished);
+        footerVisible = finished;
+
+        if (!finished) {
+            timeFooter += updateInfo.DeltaTime;
+        }
+    }
+
+    void StatInitialization(const Hedgehog::Universe::SUpdateInfo& updateInfo) {
+        if (statDelayStart != -1) { statDelayStart -= updateInfo.DeltaTime; }
+
+        if (statDelayStart != -1 && statDelayStart <= 0) {
+            AddStat();
+            selectDelay = 0.65f;
+            statDelayStart = -1;
+            statDelay = 0.17f;
+        }
+
+        if(statDelayStart == -1) { statDelay -= updateInfo.DeltaTime; }
+
+        if (statDelayStart == -1 && selectDelay != -1 && selectDelay <= 0) {
+            Select(statusIndex, false, false);
+            selectDelay = -1;
+        }
+        else if (statDelayStart == -1 && selectDelay != -1 && selectDelay > 0) {
+            selectDelay -= updateInfo.DeltaTime;
+        }
+
+        if (statDelayStart == -1 && statDelay <= 0) {
+            currentStatIndex++;
+            AddStat();
+            statDelay = 0.17f;
+            currentStatIndex = std::clamp(currentStatIndex, 0, CurrentStatSizeMinusOne());
+        }
+    }
+
     void UpdateParallel
     (
         const Hedgehog::Universe::SUpdateInfo& updateInfo
     ) override
     {
-        Sonic::SPadState const* padState = &Sonic::CInputState::GetInstance()->GetPadState();
-        currentStats = isWerehog ? statsNight : statsDay;
-        if (!exit) {
-            if (statDelayStart != -1) {
-                statDelayStart -= updateInfo.DeltaTime;
-                if (statDelayStart <= 0) {
-                    AddStat();
-                    selectDelay = 0.65f;
-                    statDelayStart = -1;
-                    statDelay = 0.17f;
-                }
-            }
-            else {
-                if (selectDelay != -1) {
-                    if (selectDelay <= 0) {
-                        Select(statusIndex, false, false);
-                        selectDelay = -1;
-                    }
-                    else {
-                        selectDelay -= updateInfo.DeltaTime;
-                    }
-                }
-                statDelay -= updateInfo.DeltaTime;
-                if (statDelay <= 0) {
-                    currentStatIndex++;
-                    AddStat();
-                    statDelay = 0.17f;
-                    currentStatIndex = std::clamp(currentStatIndex, 0, CurrentStatSizeMinusOne());
-                }
-            }
-
-            if (quitSoundTimer >= 1.06f) {
-                Common::PlaySoundStatic(wooshHandle, 1000029);
-                quitSoundTimer = -1;
-            }
-            else if(quitSoundTimer != -1) {
-                quitSoundTimer += updateInfo.DeltaTime;
-            }
-
-            medalSubImage += updateInfo.DeltaTime * 25.0f;
-            if (medalSubImage >= 30) {
-                medalSubImage = 0;
-            }
-
-            if (m_medal_info) {
-                m_medal_info->GetNode("sun")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-                m_medal_info->GetNode("sun_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-
-                m_medal_info->GetNode("moon")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-                m_medal_info->GetNode("moon_shade")->SetPatternIndex(std::clamp(medalSubImage, 0.0f, 29.0f));
-            }
-
-            if (selectDelay == -1 && statDelayStart == -1) {
-                if (switchCooldown <= 0) {
-                    if (padState->IsTapped(Sonic::eKeyState_LeftBumper) || padState->IsTapped(Sonic::eKeyState_RightBumper)) {
-                        ToggleStats();
-                        switchCooldown = 0.5f;
-                        Common::PlaySoundStatic(switchHandle, 1000028);
-                    }
-                }
-                else {
-                    switchCooldown -= updateInfo.DeltaTime;
-                }
-            }
-
-            if (selectDelay == -1 && statDelayStart == -1) {
-                if (padState->IsTapped(Sonic::eKeyState_LeftStickUp) || padState->IsTapped(Sonic::eKeyState_DpadUp)) {
-                    if (statusIndex == currentStats.size()) {
-                        statusIndex = CurrentStatSizeMinusOne();
-                        Select(statusIndex, true, true);
-                        Common::PlaySoundStatic(selectHandle, 1000039);
-                    }
-                    else if(statusIndex != 0) {
-                        if (statusIndex - 1 >= 0) {
-                            statusIndex--;
-                        }
-                        Select(statusIndex, true, true);
-                        Common::PlaySoundStatic(selectHandle, 1000039);
-                    }
-                }
-                if (padState->IsTapped(Sonic::eKeyState_LeftStickDown) || padState->IsTapped(Sonic::eKeyState_DpadDown)) {
-                    if (statusIndex + 1 <= CurrentStatSizeMinusOne()) {
-                        statusIndex++;
-                        Select(statusIndex, false, true);
-                        Common::PlaySoundStatic(selectHandle, 1000039);
-                    }
-                    else if (statusIndex + 1 == currentStats.size()) {
-                        statusIndex = currentStats.size();
-                        Select(statusIndex, false, true, true);
-                        Common::PlaySoundStatic(selectHandle, 1000039);
-                    }
-                }
-            }
-
-            if (!footerVisible) {
-                if (timeFooter >= 1.06f) {
-                    if(m_status_footer) m_status_footer->SetHideFlag(false);
-                    footerVisible = true;
-                }
-                else { if(m_status_footer) m_status_footer->SetHideFlag(true); timeFooter += updateInfo.DeltaTime; }
-            }
-        }
-        else {
+        if (exit) {
             EndDelay -= updateInfo.DeltaTime;
+            return;
         }
+
+        CurrentStat().Update(updateInfo.DeltaTime);
+
+        StatInitialization(updateInfo);
+
+        if (quitSoundTimer >= 1.06f) {
+            Common::PlaySoundStatic(wooshHandle, 1000029);
+            quitSoundTimer = -1;
+        }
+        else if (quitSoundTimer != -1) {
+            quitSoundTimer += updateInfo.DeltaTime;
+        }
+
+        MedalUpdate(updateInfo);
+
+        ControlCharacterSwitch(updateInfo);
+
+        ControlStatSelection();
+
+        FooterTimer(updateInfo);
     }
 
     void Kill() {
@@ -665,7 +726,11 @@ public:
     }
 
     bool IsQuit() {
-        return statusIndex == currentStats.size();
+        return statusIndex == CurrentStats().size();
+    }
+
+    ~CHudStatus() {
+        Kill();
     }
 };
 
