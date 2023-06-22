@@ -11,6 +11,10 @@
 
 // Standard library
 #include <cstdint>
+#include <format>
+#include <iostream>
+#include <string>
+#include <string_view>
 #include <cstdio>
 #include <string>
 #include <filesystem>

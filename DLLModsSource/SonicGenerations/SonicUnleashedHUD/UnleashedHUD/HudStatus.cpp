@@ -27,9 +27,9 @@ const char* intro2() {
 
 struct Stat {
     const char* name = "";
-    int txt_num = 0;
     int level = 0;
-    int  maxLevel = 0;
+    int maxLevel = 0;
+    int txt_num = 0;
     int count = 0;
     float levelProgress = 0.0f;
 
@@ -74,11 +74,34 @@ Stat life = { "life", 0, 11, 3, 0 };
 Stat unleash = { "unleash", 0, 11, 4, 0 };
 Stat shield = { "shield", 0, 11, 5, 0 };
 
-std::vector<Stat> statsDay = { speed, ring_energy };
-std::vector<Stat> statsNight = { combat, strength, life, unleash, shield };
+struct StatManager {
+    std::vector<Stat> stats;
+    float expProgress = 0;
+    int expLevel = 0;
+};
+
+StatManager statsDay;
+StatManager statsNight;
+
+void InitializeStats() {
+    statsDay.stats.emplace_back(speed);
+    statsDay.stats.emplace_back(ring_energy);
+    statsDay.expLevel = 0;
+
+    statsNight.stats.emplace_back(combat);
+    statsNight.stats.emplace_back(strength);
+    statsNight.stats.emplace_back(life);
+    statsNight.stats.emplace_back(unleash);
+    statsNight.stats.emplace_back(shield);
+    statsNight.expLevel = 1;
+}
+
+StatManager& CurrentStatManager() {
+    return isWerehog ? statsNight : statsDay;
+}
 
 std::vector<Stat>& CurrentStats() {
-    return isWerehog ? statsNight : statsDay;
+    return CurrentStatManager().stats;
 }
 
 Stat& CurrentStat() {
@@ -170,9 +193,8 @@ public:
     }
 
     void RemoveStats() {
-        for (int i = 0; i < statsDay.size(); i++)
+        for (Stat& s : statsDay.stats)
         {
-            Stat& s = statsDay[i];
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_tag_bg_2);
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_tag_txt_2);
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_prgs_bg_2);
@@ -180,9 +202,8 @@ public:
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_prgs_num_2);
         }
 
-        for (int i = 0; i < statsNight.size(); i++)
+        for (Stat& s : statsNight.stats)
         {
-            Stat& s = statsNight[i];
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_tag_bg_2);
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_tag_txt_2);
             Chao::CSD::CProject::DestroyScene(m_rcStatus.Get(), s.m_prgs_bg_2);
@@ -208,6 +229,7 @@ public:
         CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
         m_prgs_num_1->SetHideFlag(false);
+        m_prgs_num_1->GetNode("num")->SetText(std::to_string(CurrentStatManager().expLevel).c_str());
         CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
         m_decide_bg->SetHideFlag(false);
@@ -236,7 +258,7 @@ public:
             CSDCommon::PlayAnimation(*CurrentStats()[index - 1].m_prgs_num_2, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
             CSDCommon::PlayAnimation(*CurrentStats()[index - 1].m_prgs_bar_2, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0, 0, false, true);
         }
-        else if(!quit && !reverse && !up) {
+        else {
             CSDCommon::PlayAnimation(*CurrentStats()[index].m_tag_bg_2, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
             CSDCommon::PlayAnimation(*CurrentStats()[index].m_prgs_bg_2, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
             CSDCommon::PlayAnimation(*CurrentStats()[index].m_prgs_num_2, select(), Chao::CSD::eMotionRepeatType_PlayOnce, 1, 0);
@@ -384,7 +406,7 @@ public:
        CSDCommon::PlayAnimation(*m_prgs_bar_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
        m_prgs_num_1->SetHideFlag(false);
-       m_prgs_num_1->GetNode("num")->SetText("69");
+       m_prgs_num_1->GetNode("num")->SetText(std::to_string(CurrentStatManager().expLevel).c_str());
        CSDCommon::PlayAnimation(*m_prgs_num_1, intro(), Chao::CSD::eMotionRepeatType_PlayOnce, 1.0, 0.0);
 
        m_decide_bg->SetHideFlag(false);
@@ -416,6 +438,7 @@ public:
        statDelayStart = 0.75f;
 
        currentStatIndex = 0;
+       statusIndex = 0;
        y = 0.0f;
 
        quitSoundTimer = 0.0f;
@@ -431,7 +454,6 @@ public:
     ) override
     {
         isWerehog = false;
-
         Sonic::CApplicationDocument::GetInstance()->AddMessageActor("GameObject", this);
         pGameDocument->AddUpdateUnit("1", this);
 
@@ -619,29 +641,7 @@ public:
     }
 
     bool IsQuitFinish() {
-        bool animsDone = m_tag_bg_1->m_MotionFrame >= m_tag_bg_1->m_MotionEndFrame &&
-            m_tag_txt_1->m_MotionFrame >= m_tag_txt_1->m_MotionEndFrame &&
-            m_prgs_bg_1->m_MotionFrame >= m_prgs_bg_1->m_MotionEndFrame &&
-            m_prgs_bar_1->m_MotionFrame >= m_prgs_bar_1->m_MotionEndFrame &&
-            m_prgs_num_1->m_MotionFrame >= m_prgs_num_1->m_MotionEndFrame &&
-            m_decide_bg->m_MotionFrame >= m_decide_bg->m_MotionEndFrame &&
-            m_status_footer->m_MotionFrame >= m_status_footer->m_MotionEndFrame &&
-            m_medal_info->m_MotionFrame >= m_medal_info->m_MotionEndFrame &&
-            m_medal_s_gauge->m_MotionFrame >= m_medal_s_gauge->m_MotionEndFrame &&
-            m_medal_m_gauge->m_MotionFrame >= m_medal_m_gauge->m_MotionEndFrame;
-
-        for (int i = 0; i < CurrentStats().size(); i++)
-        {
-            Stat& s = CurrentStats()[i];
-            if (s.m_tag_bg_2->m_MotionFrame < s.m_tag_bg_2->m_MotionEndFrame ||
-                s.m_tag_txt_2->m_MotionFrame < s.m_tag_txt_2->m_MotionEndFrame ||
-                s.m_prgs_bg_2->m_MotionFrame < s.m_prgs_bg_2->m_MotionEndFrame ||
-                s.m_prgs_bar_2->m_MotionFrame < s.m_prgs_bar_2->m_MotionEndFrame ||
-                s.m_prgs_num_2->m_MotionFrame < s.m_prgs_num_2->m_MotionEndFrame)
-                animsDone = false;
-        }
-
-        return EndDelay <= 0.0f && animsDone;
+        return EndDelay <= 0.0f;
     }
 
     bool IsQuit() {
@@ -654,28 +654,41 @@ public:
 };
 
 void HudStatus::Start() {
+    if (status)
+        HudStatus::Kill();
+
     status = boost::make_shared<CHudStatus>();
     Sonic::CGameDocument::GetInstance()->AddGameObject(status);
 }
 
 void HudStatus::End() {
+    if (!status)
+        return;
+
     ((CHudStatus*)status.get())->Outro();
 }
 
 bool HudStatus::CanEnd() {
+    if (!status)
+        return false;
+
     return ((CHudStatus*)status.get())->IsQuit();
 }
 
 bool HudStatus::EndDelayFinish() {
+    if (!status)
+        return false;
+
     return ((CHudStatus*)status.get())->IsQuitFinish();
 }
 
 void HudStatus::Kill() {
-    if (status) {
+    if (status)
         ((CHudStatus*)status.get())->Kill();
-    }
+    else
+        return;
 }
 
 void HudStatus::Install() {
-
+    InitializeStats();
 }

@@ -45,11 +45,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>C:\Program Files (x86)\Steam\steamapps\common\Sonic Generations\Mods\Sonic Unleashed HUD 2\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IntDir>$(SolutionDir)$(Configuration)\objects\</IntDir>
-    <OutDir>C:\Program Files (x86)\Steam\steamapps\common\Sonic Generations\Mods\Sonic Unleashed HUD\</OutDir>
+    <OutDir>C:\Program Files (x86)\Steam\steamapps\common\Sonic Generations\Mods\Sonic Unleashed HUD 2\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -89,7 +90,7 @@ copy /Y "$(MSBuildProjectDirectory)\UnleashedHUD.json" "$(SolutionDir)$(Configur
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Pch.h</ForcedIncludeFiles>
       <AdditionalIncludeDirectories>$(ProjectDir)include\BlueBlur;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalOptions>/Ob3 %(AdditionalOptions)</AdditionalOptions>
       <StringPooling>true</StringPooling>
